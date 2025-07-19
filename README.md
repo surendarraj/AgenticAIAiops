@@ -1,2 +1,2 @@
 This work offers a streamlined Agentic AI process intended to improve AIOps.
-AIOps (Artificial Intelligence for IT Operations) denotes the use of AI and machine learning to automate and enhance IT operations, including anomaly detection, root cause analysis, and predictive maintenance.<img width="4239" height="56" alt="image" src="https://github.com/user-attachments/assets/60a6e42a-8533-4fa3-8895-10e025cf22c7" />
+AIOps (Artificial Intelligence for IT Operations) denotes the use of AI and machine learning to automate and enhance IT operations, including anomaly detection, root cause analysis, and predictive maintenance.
