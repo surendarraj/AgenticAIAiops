@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: aiops-webhook
+  namespace: monitoring
+spec:
+  route:
+    receiver: "aiops-webhook"
+    group_by: ["alertname"]
+  receivers:
+  - name: "aiops-webhook"
+    webhookConfigs:
+    - url: "http://aiops-agents-svc.aiops.svc.cluster.local/ingest/alertmanager"
+      httpConfig:
+        authorization:
+          type: "Bearer"
+          credentials:
+            name: aiops-auth
+            key: token

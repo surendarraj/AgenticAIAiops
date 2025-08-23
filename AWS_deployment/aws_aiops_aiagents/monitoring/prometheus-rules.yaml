@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: aiops-thresholds
+  namespace: monitoring
+spec:
+  groups:
+  - name: aiops.rules
+    rules:
+    - alert: CPUHigh
+      expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 85
+      for: 2m
+      labels:
+        severity: critical
+        metric: "cpu"
+      annotations:
+        summary: "Node CPU high on {{ $labels.instance }}"
+        value: '{{ printf "%.2f" (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)) }}'
+    - alert: MemoryHigh
+      expr: ((1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100) > 85
+      for: 2m
+      labels:
+        severity: critical
+        metric: "memory"
+      annotations:
+        summary: "Node memory high on {{ $labels.instance }}"
+        value: '{{ printf "%.2f" ((1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100) }}'
+    - alert: DiskHigh
+      expr: (
+        (node_filesystem_size_bytes{fstype!~"tmpfs|devtmpfs|squashfs"} - node_filesystem_free_bytes{fstype!~"tmpfs|devtmpfs|squashfs"})
+        / node_filesystem_size_bytes{fstype!~"tmpfs|devtmpfs|squashfs"} * 100
+      ) > 85
+      for: 2m
+      labels:
+        severity: critical
+        metric: "disk"
+      annotations:
+        summary: "Disk usage high on {{ $labels.instance }} ({{ $labels.mountpoint }})"
+        value: '{{ printf "%.2f" (((node_filesystem_size_bytes{fstype!~"tmpfs|devtmpfs|squashfs"} - node_filesystem_free_bytes{fstype!~"tmpfs|devtmpfs|squashfs"}) / node_filesystem_size_bytes{fstype!~"tmpfs|devtmpfs|squashfs"} * 100)) }}'

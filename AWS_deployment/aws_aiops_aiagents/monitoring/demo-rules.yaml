@@ -1,0 +1,24 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: aiops-demo
+  namespace: monitoring
+spec:
+  groups:
+  - name: aiops.demo
+    rules:
+    - alert: DemoCPUHigh
+      expr: vector(90)
+      for: 0m
+      labels: { severity: critical, metric: "cpu" }
+      annotations: { summary: "Demo CPU alert", value: "90" }
+    - alert: DemoMemHigh
+      expr: vector(92)
+      for: 0m
+      labels: { severity: critical, metric: "memory" }
+      annotations: { summary: "Demo memory alert", value: "92" }
+    - alert: DemoDiskHigh
+      expr: vector(91)
+      for: 0m
+      labels: { severity: critical, metric: "disk" }
+      annotations: { summary: "Demo disk alert", value: "91" }

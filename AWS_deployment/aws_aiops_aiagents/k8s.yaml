@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aiops
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aiops-agents-sa
+  namespace: aiops
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: aiops-agents-clusterrole
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments/scale"]
+  verbs: ["get","update","patch"]
+- apiGroups: ["","apps"]
+  resources: ["deployments","replicasets","pods","pods/log","events","namespaces"]
+  verbs: ["get","list","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: aiops-agents-crb
+subjects:
+- kind: ServiceAccount
+  name: aiops-agents-sa
+  namespace: aiops
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: aiops-agents-clusterrole
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aiops-agents
+  namespace: aiops
+  labels: { app: aiops-agents }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: aiops-agents } }
+  template:
+    metadata: { labels: { app: aiops-agents } }
+    spec:
+      serviceAccountName: aiops-agents-sa
+      containers:
+      - name: web
+        image: REPLACE_IMAGE
+        imagePullPolicy: IfNotPresent
+        env:
+        - { name: Z_THRESHOLD, value: "2.5" }
+        - { name: CPU_THRESHOLD, value: "85" }
+        - { name: MEM_THRESHOLD, value: "85" }
+        - { name: DISK_THRESHOLD, value: "85" }
+        - { name: DRY_RUN, value: "false" }
+        - { name: TARGET_NAMESPACE, value: "default" }
+        - { name: TARGET_DEPLOYMENT, value: "your-app" }
+        - { name: LLM_MODEL, value: "gpt-3.5-turbo" }
+        - { name: LLM_TEMPERATURE, value: "0" }
+        - { name: LLM_GATE, value: "approve_only" }
+        ports: [{ containerPort: 8080 }]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aiops-agents-svc
+  namespace: aiops
+spec:
+  type: ClusterIP
+  selector: { app: aiops-agents }
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
